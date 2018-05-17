@@ -6,9 +6,14 @@ using UnityStandardAssets.CrossPlatformInput;
 public class GameManager : MonoBehaviour {
 
     public bool recording = true;
-	
-	// Update is called once per frame
-	void Update () {
+
+    private void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update () {
         if (CrossPlatformInputManager.GetButton("Fire1"))
         {
             recording = false;

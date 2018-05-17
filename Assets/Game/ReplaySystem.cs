@@ -9,6 +9,9 @@ public class ReplaySystem : MonoBehaviour {
     private GameManager gameManager;
     private Rigidbody rigidBody;
 
+    private int bufferSize = bufferFrames;
+    private int lastRecordedFrame = 0, nextRecordedFrame = 0;
+
 	// Use this for initialization
 	void Start () {
         rigidBody = GetComponent<Rigidbody>();
@@ -31,25 +34,35 @@ public class ReplaySystem : MonoBehaviour {
     void PlayBack()
     {
         rigidBody.isKinematic = true;
-        int frame = Time.frameCount % bufferFrames;
-        if (keyFrames[frame].frameTime == 0 && frame > 0)
-        {
-            frame = 0;
+
+        if (Time.frameCount < bufferSize || 
+            (lastRecordedFrame != 0 && lastRecordedFrame < bufferSize))
+        {//Never reached the end of the cycle
+            bufferSize = Time.frameCount;
+            lastRecordedFrame = Time.frameCount;
         }
 
-        print("Reading frame: " + frame);
+        int frame = Time.frameCount % bufferSize;
+
+        //print("Reading frame: " + frame);
         transform.position = keyFrames[frame].position;
         transform.rotation = keyFrames[frame].rotation;
     }
 
-    private void Record()
+    void Record()
     {
+        bufferSize = bufferFrames;
         rigidBody.isKinematic = false;
-        int frame = Time.frameCount % bufferFrames;
-        float time = Time.time;
-        print("Writing frame: " + frame);
+        nextRecordedFrame = Time.frameCount;
 
-        keyFrames[frame] = new MyKeyFrame(time, transform.position, transform.rotation);
+        if (lastRecordedFrame > 0)
+        {
+            nextRecordedFrame = lastRecordedFrame++;
+        }
+
+        int frame = nextRecordedFrame % bufferFrames;
+        //print("Writing frame: " + frame);
+        keyFrames[frame] = new MyKeyFrame(Time.time, transform.position, transform.rotation);
     }
 }
 /// <summary>
